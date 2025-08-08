@@ -9,7 +9,12 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-type ChatMessage = { sender: string; message: string; timestamp: number };
+type ChatMessage = {
+  sender: string;
+  message: string;
+  timestamp: number;
+  imageDataUrl?: string;
+};
 const MAX_HISTORY_PER_ROOM = 200;
 const roomToMessages: Map<string, ChatMessage[]> = new Map();
 const socketToUser: Map<string, { room: string; username: string }> = new Map();
@@ -46,21 +51,39 @@ app.prepare().then(() => {
       socket.emit("history", history);
     });
 
-    socket.on("message", ({ room, message, sender }) => {
-      console.log(`${sender}가 ${room}에 메세지를 보냄: ${message}`);
-      // 서버 메모리에 메시지 저장
-      const history = roomToMessages.get(room) ?? [];
-      const msgObj: ChatMessage = { sender, message, timestamp: Date.now() };
-      history.push(msgObj);
-      // 히스토리 개수 제한
-      if (history.length > MAX_HISTORY_PER_ROOM) {
-        history.splice(0, history.length - MAX_HISTORY_PER_ROOM);
-      }
-      roomToMessages.set(room, history);
+    socket.on(
+      "message",
+      ({
+        room,
+        message,
+        sender,
+        imageDataUrl,
+      }: {
+        room: string;
+        message: string;
+        sender: string;
+        imageDataUrl?: string;
+      }) => {
+        console.log(`${sender}가 ${room}에 메세지를 보냄: ${message}`);
+        // 서버 메모리에 메시지 저장
+        const history = roomToMessages.get(room) ?? [];
+        const msgObj: ChatMessage = {
+          sender,
+          message,
+          timestamp: Date.now(),
+          imageDataUrl,
+        };
+        history.push(msgObj);
+        // 히스토리 개수 제한
+        if (history.length > MAX_HISTORY_PER_ROOM) {
+          history.splice(0, history.length - MAX_HISTORY_PER_ROOM);
+        }
+        roomToMessages.set(room, history);
 
-      // 본인 제외 룸에 브로드캐스트
-      socket.to(room).emit("message", msgObj);
-    });
+        // 본인 제외 룸에 브로드캐스트
+        socket.to(room).emit("message", msgObj);
+      }
+    );
 
     socket.on("disconnect", () => {
       console.log(`유저 연결 해제: ${socket.id}`);

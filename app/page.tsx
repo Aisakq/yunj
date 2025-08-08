@@ -104,6 +104,7 @@ export default function Home() {
                 message={msg.message}
                 isOwnMessage={msg.sender === userName}
                 timestamp={msg.timestamp}
+                imageDataUrl={msg.imageDataUrl}
               />
             ))}
           </div>
