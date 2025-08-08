@@ -25,6 +25,7 @@ const ChatForm = ({
     <form onSubmit={handleSubmit} className="flex gap-2 mt-4 items-center">
       <input
         type="text"
+        value={message}
         onChange={(e) => setMessage(e.target.value)}
         className="flex-1 px-4 border-2 border-gray-300 py-2 rounded-lg focus:outline-none focus:border-blue-400"
         placeholder="여기에 메세지를 입력하세요..."

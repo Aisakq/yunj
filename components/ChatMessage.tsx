@@ -33,7 +33,7 @@ const ChatMessage = ({
       } mb-3`}
     >
       <div
-        className={`max-w-xs px-4 py-2 rounded-lg ${
+        className={`max-w-[80%] px-4 py-2 rounded-lg break-words ${
           isSystemMessage
             ? "bg-gray-800 text-white text-center text-xs"
             : isOwnMessage
@@ -47,12 +47,16 @@ const ChatMessage = ({
           <img
             src={imageDataUrl}
             alt="uploaded"
-            className="max-w-xs rounded mb-1"
+            className="max-w-full h-auto rounded mb-1"
           />
         )}
-        {message && <p>{message}</p>}
+        {message && (
+          <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
+        )}
         {!isSystemMessage && timeStr && (
-          <p className="mt-1 text-[10px] text-gray-500 text-right">{timeStr}</p>
+          <p className="mt-1 text-[11px] text-gray-600/90 text-right">
+            {timeStr}
+          </p>
         )}
       </div>
     </div>

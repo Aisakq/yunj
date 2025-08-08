@@ -29,6 +29,42 @@ export default function Home() {
       setMessages((prev) => [...prev, data]);
     });
 
+    socket.on(
+      "export",
+      (payload: {
+        filename: string;
+        mimeType: string;
+        content: string;
+        encoding?: string; // base64
+      }) => {
+        try {
+          const { filename, mimeType, content, encoding } = payload;
+          let blob: Blob;
+          if (encoding === "base64") {
+            const byteChars = atob(content);
+            const byteNumbers = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+              byteNumbers[i] = byteChars.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            blob = new Blob([byteArray], { type: mimeType });
+          } else {
+            blob = new Blob([content], { type: mimeType });
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          // noop
+        }
+      }
+    );
+
     socket.on("user_joined", (message) => {
       setMessages((prev) => [
         ...prev,
@@ -48,6 +84,7 @@ export default function Home() {
       socket.off("user_joined");
       socket.off("user_left");
       socket.off("message");
+      socket.off("export");
     };
   }, []);
   const handleJoinRoom = () => {
@@ -95,8 +132,29 @@ export default function Home() {
         </div>
       ) : (
         <div className="w-full max-w-3xl mx-auto">
-          <h1 className="mb-4 text-2xl font-bold">Yunj Archive | {room}</h1>
-          <div className="h-[500px] overflow-y-auto p-4 mb-4 bg-gray-200 border-2 border-gray-300 rounded-lg">
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Yunj Archive | {room}</h1>
+            <button
+              onClick={async () => {
+                const resp = await fetch("/export-all");
+                if (!resp.ok) return;
+                const blob = await resp.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "chats_export.zip";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              }}
+              className="px-3 py-2 text-sm bg-gray-800 text-white rounded"
+              title="모든 채팅방을 각각 Excel로 내보내기"
+            >
+              전체 내보내기 (ZIP)
+            </button>
+          </div>
+          <div className="h-[500px] overflow-y-auto p-4 mb-4 bg-gray-100 border border-gray-300 rounded-lg">
             {messages.map((msg, index) => (
               <ChatMessage
                 key={index}
