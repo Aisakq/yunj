@@ -12,17 +12,13 @@ const handle = app.getRequestHandler();
 type ChatMessage = { sender: string; message: string };
 const MAX_HISTORY_PER_ROOM = 200;
 const roomToMessages: Map<string, ChatMessage[]> = new Map();
+const socketToUser: Map<string, { room: string; username: string }> = new Map();
 
 app.prepare().then(() => {
   const httpServer = createServer(handle);
   const allowedOrigins = (
     process.env.ALLOWED_ORIGINS ||
-    [
-      "http://localhost:3000",
-      "http://localhost",
-      "https://localhost",
-      "capacitor://localhost",
-    ].join(",")
+    ["http://localhost:3000", "http://localhost", "https://localhost"].join(",")
   )
     .split(",")
     .map((s) => s.trim())
@@ -42,6 +38,7 @@ app.prepare().then(() => {
       socket.join(room);
       console.log(`${username}가 ${room}에 입장`);
       socket.to(room).emit("user_joined", `${username}이 채팅에 입장`);
+      socketToUser.set(socket.id, { room, username });
 
       // 방 히스토리 초기화 및 전송
       const history = roomToMessages.get(room) ?? [];
@@ -66,6 +63,12 @@ app.prepare().then(() => {
 
     socket.on("disconnect", () => {
       console.log(`유저 연결 해제: ${socket.id}`);
+      const info = socketToUser.get(socket.id);
+      if (info) {
+        const { room, username } = info;
+        socket.to(room).emit("user_left", `${username}이 채팅을 떠남`);
+        socketToUser.delete(socket.id);
+      }
     });
   });
 
