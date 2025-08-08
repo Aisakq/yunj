@@ -4,10 +4,22 @@ interface ChatMessageProps {
   sender: string;
   message: string;
   isOwnMessage: boolean;
+  timestamp?: number;
 }
 
-const ChatMessage = ({ sender, message, isOwnMessage }: ChatMessageProps) => {
+const ChatMessage = ({
+  sender,
+  message,
+  isOwnMessage,
+  timestamp,
+}: ChatMessageProps) => {
   const isSystemMessage = sender === "system";
+  const timeStr = timestamp
+    ? new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
   return (
     <div
       className={`flex ${
@@ -29,6 +41,9 @@ const ChatMessage = ({ sender, message, isOwnMessage }: ChatMessageProps) => {
       >
         {!isSystemMessage && <p className="text-sm font-bold">{sender}</p>}
         <p>{message}</p>
+        {!isSystemMessage && timeStr && (
+          <p className="mt-1 text-[10px] text-gray-500 text-right">{timeStr}</p>
+        )}
       </div>
     </div>
   );

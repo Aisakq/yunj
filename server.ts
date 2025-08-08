@@ -9,7 +9,7 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-type ChatMessage = { sender: string; message: string };
+type ChatMessage = { sender: string; message: string; timestamp: number };
 const MAX_HISTORY_PER_ROOM = 200;
 const roomToMessages: Map<string, ChatMessage[]> = new Map();
 const socketToUser: Map<string, { room: string; username: string }> = new Map();
@@ -50,7 +50,8 @@ app.prepare().then(() => {
       console.log(`${sender}가 ${room}에 메세지를 보냄: ${message}`);
       // 서버 메모리에 메시지 저장
       const history = roomToMessages.get(room) ?? [];
-      history.push({ sender, message });
+      const msgObj: ChatMessage = { sender, message, timestamp: Date.now() };
+      history.push(msgObj);
       // 히스토리 개수 제한
       if (history.length > MAX_HISTORY_PER_ROOM) {
         history.splice(0, history.length - MAX_HISTORY_PER_ROOM);
@@ -58,7 +59,7 @@ app.prepare().then(() => {
       roomToMessages.set(room, history);
 
       // 본인 제외 룸에 브로드캐스트
-      socket.to(room).emit("message", { sender, message });
+      socket.to(room).emit("message", msgObj);
     });
 
     socket.on("disconnect", () => {

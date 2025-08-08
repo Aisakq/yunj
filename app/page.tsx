@@ -9,24 +9,33 @@ export default function Home() {
   const [room, setRoom] = useState("");
   const [joined, setJoined] = useState(false);
   const [messages, setMessages] = useState<
-    { sender: string; message: string }[]
+    { sender: string; message: string; timestamp?: number }[]
   >([]);
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    socket.on("history", (history: { sender: string; message: string }[]) => {
-      setMessages(history);
-    });
+    socket.on(
+      "history",
+      (history: { sender: string; message: string; timestamp?: number }[]) => {
+        setMessages(history);
+      }
+    );
     socket.on("message", (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
     socket.on("user_joined", (message) => {
-      setMessages((prev) => [...prev, { sender: "system", message }]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "system", message, timestamp: Date.now() },
+      ]);
     });
 
     socket.on("user_left", (message) => {
-      setMessages((prev) => [...prev, { sender: "system", message }]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "system", message, timestamp: Date.now() },
+      ]);
     });
 
     return () => {
@@ -44,7 +53,12 @@ export default function Home() {
   };
   const handleSendMessage = (message: string) => {
     const data = { room, message, sender: userName };
-    setMessages((prev) => [...prev, { sender: userName, message }]);
+    const local: { sender: string; message: string; timestamp?: number } = {
+      sender: userName,
+      message,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, local]);
     socket.emit("message", data);
   };
   return (
