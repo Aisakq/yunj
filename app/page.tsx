@@ -134,25 +134,7 @@ export default function Home() {
         <div className="w-full max-w-3xl mx-auto">
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Yunj Archive | {room}</h1>
-            <button
-              onClick={async () => {
-                const resp = await fetch("/export-all");
-                if (!resp.ok) return;
-                const blob = await resp.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "chats_export.zip";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-              }}
-              className="px-3 py-2 text-sm bg-gray-800 text-white rounded"
-              title="모든 채팅방을 각각 Excel로 내보내기"
-            >
-              전체 내보내기 (ZIP)
-            </button>
+            {/* 내보내기 버튼 제거: 관리자 명령으로만 동작 */}
           </div>
           <div className="h-[500px] overflow-y-auto p-4 mb-4 bg-gray-100 border border-gray-300 rounded-lg">
             {messages.map((msg, index) => (

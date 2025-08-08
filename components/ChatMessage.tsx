@@ -47,7 +47,7 @@ const ChatMessage = ({
           <img
             src={imageDataUrl}
             alt="uploaded"
-            className="max-w-full h-auto rounded mb-1"
+            className="rounded mb-1 max-w-[240px] max-h-[240px] w-auto h-auto object-contain"
           />
         )}
         {message && (
