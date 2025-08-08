@@ -5,6 +5,7 @@ interface ChatMessageProps {
   message: string;
   isOwnMessage: boolean;
   timestamp?: number;
+  imageDataUrl?: string;
 }
 
 const ChatMessage = ({
@@ -12,6 +13,7 @@ const ChatMessage = ({
   message,
   isOwnMessage,
   timestamp,
+  imageDataUrl,
 }: ChatMessageProps) => {
   const isSystemMessage = sender === "system";
   const timeStr = timestamp
@@ -40,7 +42,16 @@ const ChatMessage = ({
         }`}
       >
         {!isSystemMessage && <p className="text-sm font-bold">{sender}</p>}
-        <p>{message}</p>
+        {imageDataUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageDataUrl}
+            alt="uploaded"
+            className="max-w-xs rounded mb-1"
+          />
+        ) : (
+          <p>{message}</p>
+        )}
         {!isSystemMessage && timeStr && (
           <p className="mt-1 text-[10px] text-gray-500 text-right">{timeStr}</p>
         )}

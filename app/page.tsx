@@ -9,7 +9,12 @@ export default function Home() {
   const [room, setRoom] = useState("");
   const [joined, setJoined] = useState(false);
   const [messages, setMessages] = useState<
-    { sender: string; message: string; timestamp?: number }[]
+    {
+      sender: string;
+      message: string;
+      timestamp?: number;
+      imageDataUrl?: string;
+    }[]
   >([]);
   const [userName, setUserName] = useState("");
 
@@ -51,15 +56,16 @@ export default function Home() {
     }
     setJoined(true);
   };
-  const handleSendMessage = (message: string) => {
-    const data = { room, message, sender: userName };
-    const local: { sender: string; message: string; timestamp?: number } = {
+  const handleSend = (message: string, imageDataUrl?: string) => {
+    const payload = { room, message, sender: userName, imageDataUrl };
+    const local = {
       sender: userName,
       message,
       timestamp: Date.now(),
+      imageDataUrl,
     };
     setMessages((prev) => [...prev, local]);
-    socket.emit("message", data);
+    socket.emit("message", payload);
   };
   return (
     <div className="flex mt-24 justify-center w-full">
@@ -97,10 +103,11 @@ export default function Home() {
                 sender={msg.sender}
                 message={msg.message}
                 isOwnMessage={msg.sender === userName}
+                timestamp={msg.timestamp}
               />
             ))}
           </div>
-          <ChatForm onSendMessage={handleSendMessage} />
+          <ChatForm onSend={handleSend} />
         </div>
       )}
     </div>
