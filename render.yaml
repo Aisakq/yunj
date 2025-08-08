@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: yunjarchivebyaisakq
+    env: node
+    plan: free
+    rootDir: yunj_archive
+    buildCommand: npm ci --no-audit --no-fund && npm run build:socket
+    startCommand: npm run start:socket
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: ALLOWED_ORIGINS
+        value: https://yunjarchivebyaisakq.onrender.com,capacitor://localhost
+
